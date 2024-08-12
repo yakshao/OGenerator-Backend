@@ -38,12 +38,12 @@ var upload = multer.diskStorage({
 var storage = multer({ storage: upload });
 
 const firebaseConfig = {
-  apiKey: ########
-  authDomain: #########
-  projectId: ######
-  storageBucket:######
-  messagingSenderId:#######
-  appId: #########
+  apiKey: ######,
+  authDomain: #######,
+  projectId: #######,
+  storageBucket: ########,
+  messagingSenderId: #######,
+  appId: #######,
   measurementId: ########
 };
 
@@ -58,22 +58,86 @@ app.get('/', function (req, res, next) {
 
 app.post('/genOG', storage.single('img'), async function (req, res) {
 
-  const svg = await satori(
-    <div style={{ color: 'black' }}>hello, world</div>,
-    {
-      width: 600,
-      height: 400,
-      fonts: [
-        {
-          name: 'Roboto',
-          // Use `fs` (Node.js only) or `fetch` to read the font as Buffer/ArrayBuffer and provide `data` here.
-          data: robotoArrayBuffer,
-          weight: 400,
-          style: 'normal',
-        },
-      ],
-    },
-  )
+ 
+  const imgCanvas = createCanvas(1200, 630);
+  const crx = imgCanvas.getContext('2d');
+
+  const logo = await loadImage(__dirname + '/' + 'logoMedColored.png');
+  
+    crx.fillStyle = '#FFFFFF';
+    crx.fillRect( 0, 0, 1200, 630)
+    crx.fillStyle = '#FAEDCE';
+
+    crx.roundRect(30, 20, 1140, 590, 20)
+    crx.stroke();
+    crx.fill();
+    crx.strokeStyle= '#000000'
+    
+
+    if (req.file != undefined){
+
+    const toBeDrawnImg = await loadImage(__dirname + '/' + req.file.filename);
+      crx.drawImage( toBeDrawnImg, 900, 280, 200, 200)
+
+      crx.moveTo(100, 275);
+      crx.beginPath();
+       crx.arc(1000, 380, 120, 0, 2 * Math.PI, true);
+      crx.closePath();
+      crx.lineWidth = 50;
+      crx.strokeStyle = '#FAEDCE';
+      crx.stroke();
+    
+     }
+
+     
+  crx.drawImage(logo,  80, 50, 100, 90)
+
+  crx.font = '600 75px OpenSans'
+
+  crx.fillStyle = '#000000';
+
+  let titleSlice = req.body.title.slice(0, 20) + '...';
+
+  
+
+  crx.fillText(titleSlice, 80, 230)
+  // crx.fillStyle = '#000000';
+
+ // crx.fillRect(50, 450, 1100, 150)
+
+ // crx.font = '600 80px OpenSans'
+let accu = [];
+let eightString = '';
+let number = 0;
+     let textSplit = req.body.content.split(' ');
+
+     if(textSplit.length>= 7){
+      for (i=number; i<textSplit.length; i++){
+        eightString = eightString + ' ' + textSplit[i];
+        if(i!=0 && i%7==0){
+         accu.push(eightString.trim());
+         eightString= '';
+        }
+      }
+    }else{
+      accu.push(textSplit.join(' '))
+    }
+console.log(accu)
+
+
+  crx.fillStyle = '#000000';
+  crx.font = '500 30px OpenSans'
+  let top = 300;
+  let nOfLines = Math.min(5, accu.length)
+
+  for(i= 0; i< nOfLines; i++){
+    crx.fillText(accu[i], 90, top);
+    top =   top + 50
+  }
+  console.log(nOfLines)
+  crx.fillText('...', 90, top);
+
+
 
   const message4 = imgCanvas.toDataURL('image/jpeg');
   const name = req.file?.filename? `${req.file.filename}` :'akshay'
